@@ -38,6 +38,22 @@ npm run prisma:generate
 npm run dev
 ```
 
+## Render deploy note (Prisma)
+
+If your production MySQL database already has existing tables, `prisma migrate deploy` can fail with `P3005`.
+
+For this project, startup on Render runs only Prisma client generation:
+
+```bash
+npm run start
+```
+
+Migration deploy remains available as a manual script when your database is properly baselined:
+
+```bash
+npm run prisma:migrate:deploy
+```
+
 ## Frontend quick start
 
 ```bash
