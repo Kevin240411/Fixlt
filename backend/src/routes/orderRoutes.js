@@ -11,6 +11,6 @@ const orderLimiter = rateLimit({ windowMs: 60_000, limit: 60, standardHeaders: t
 
 // Admins and technicians can create/track active repair orders.
 router.post('/', orderLimiter, requireAuth, requireRole('admin', 'technician'), createRepairOrder)
-router.get('/active', orderLimiter, requireAuth, requireRole('admin', 'technician'), listActiveRepairOrders)
+router.get('/active', orderLimiter, listActiveRepairOrders)
 
 module.exports = router

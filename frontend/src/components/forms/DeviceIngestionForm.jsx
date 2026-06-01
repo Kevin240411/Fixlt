@@ -11,27 +11,32 @@ const initialDevice = {
 export function DeviceIngestionForm() {
   const { addDevice } = useAppData()
   const [form, setForm] = useState(initialDevice)
+  const [status, setStatus] = useState('')
 
   const onChange = (event) => {
     const { name, value } = event.target
     setForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  const onSubmit = (event) => {
+  const onSubmit = async (event) => {
     event.preventDefault()
     if (!form.brand.trim() || !form.model.trim() || !form.serialNumber.trim() || !form.reportedFault.trim()) {
       return
     }
 
-    addDevice({
-      ...form,
-      id: Date.now(),
-      brand: form.brand.trim(),
-      model: form.model.trim(),
-      serialNumber: form.serialNumber.trim(),
-      reportedFault: form.reportedFault.trim(),
-    })
-    setForm(initialDevice)
+    try {
+      await addDevice({
+        ...form,
+        brand: form.brand.trim(),
+        model: form.model.trim(),
+        serialNumber: form.serialNumber.trim(),
+        reportedFault: form.reportedFault.trim(),
+      })
+      setForm(initialDevice)
+      setStatus('Device saved to the backend.')
+    } catch (error) {
+      setStatus(error.message)
+    }
   }
 
   return (
@@ -41,6 +46,7 @@ export function DeviceIngestionForm() {
       <input className="w-full rounded border border-slate-300 px-3 py-2 text-sm" name="model" placeholder="Model" value={form.model} onChange={onChange} />
       <input className="w-full rounded border border-slate-300 px-3 py-2 text-sm" name="serialNumber" placeholder="Serial number" value={form.serialNumber} onChange={onChange} />
       <textarea className="w-full rounded border border-slate-300 px-3 py-2 text-sm" name="reportedFault" placeholder="Reported fault" rows="3" value={form.reportedFault} onChange={onChange} />
+      {status ? <p className="text-sm text-slate-600">{status}</p> : null}
       <button className="rounded bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700" type="submit">
         Save Device
       </button>

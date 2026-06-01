@@ -1,5 +1,15 @@
-const { PrismaClient } = require('@prisma/client');
+require('dotenv/config')
 
-const prisma = new PrismaClient();
+const { PrismaClient } = require('@prisma/client')
+const { PrismaMariaDb } = require('@prisma/adapter-mariadb')
 
-module.exports = prisma;
+const databaseUrl = process.env.DATABASE_URL
+
+if (!databaseUrl) {
+	throw new Error('DATABASE_URL is missing.')
+}
+
+const adapter = new PrismaMariaDb(databaseUrl)
+const prisma = new PrismaClient({ adapter })
+
+module.exports = prisma

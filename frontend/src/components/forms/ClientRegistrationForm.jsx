@@ -11,25 +11,30 @@ const initialClient = {
 export function ClientRegistrationForm() {
   const { addClient } = useAppData()
   const [form, setForm] = useState(initialClient)
+  const [status, setStatus] = useState('')
 
   const onChange = (event) => {
     const { name, value } = event.target
     setForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  const onSubmit = (event) => {
+  const onSubmit = async (event) => {
     event.preventDefault()
     if (!form.fullName.trim() || !form.phone.trim()) {
       return
     }
 
-    addClient({
-      ...form,
-      id: Date.now(),
-      fullName: form.fullName.trim(),
-      phone: form.phone.trim(),
-    })
-    setForm(initialClient)
+    try {
+      await addClient({
+        ...form,
+        fullName: form.fullName.trim(),
+        phone: form.phone.trim(),
+      })
+      setForm(initialClient)
+      setStatus('Client saved to the backend.')
+    } catch (error) {
+      setStatus(error.message)
+    }
   }
 
   return (
@@ -39,6 +44,7 @@ export function ClientRegistrationForm() {
       <input className="w-full rounded border border-slate-300 px-3 py-2 text-sm" name="phone" placeholder="Phone" value={form.phone} onChange={onChange} />
       <input className="w-full rounded border border-slate-300 px-3 py-2 text-sm" name="email" placeholder="Email" value={form.email} onChange={onChange} />
       <input className="w-full rounded border border-slate-300 px-3 py-2 text-sm" name="address" placeholder="Address" value={form.address} onChange={onChange} />
+      {status ? <p className="text-sm text-slate-600">{status}</p> : null}
       <button className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" type="submit">
         Save Client
       </button>

@@ -1,27 +1,53 @@
-const express = require('express');
-const cors = require('cors');
-// Importa tus enrutadores reales aquí cuando los tengas listos, por ejemplo:
-// const authRoutes = require('./routes/auth'); 
+const express = require('express')
+const cors = require('cors')
 
-const app = express();
+const authRoutes = require('./routes/authRoutes')
+const aiRoutes = require('./routes/aiRoutes')
+const clientRoutes = require('./routes/clientRoutes')
+const deviceRoutes = require('./routes/deviceRoutes')
+const orderRoutes = require('./routes/orderRoutes')
 
-// Configuración de CORS para tu frontend
-app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:3000"],
-  credentials: true
-}));
+const app = express()
 
-app.use(express.json());
+function getAllowedOrigins() {
+  const baseOrigins = ['http://localhost:5173', 'http://localhost:3000']
+  const configuredOrigins = [process.env.CORS_ORIGIN, process.env.FRONTEND_URL]
+    .filter(Boolean)
+    .flatMap((value) => value.split(','))
+    .map((value) => value.trim())
+    .filter(Boolean)
 
-// RUTA RAÍZ: Esto quitará el "Cannot GET /" y confirmará que todo sirve
+  const vercelOrigin = process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []
+
+  return [...new Set([...baseOrigins, ...configuredOrigins, ...vercelOrigin])]
+}
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || getAllowedOrigins().includes(origin)) {
+        return callback(null, true)
+      }
+
+      return callback(new Error(`CORS blocked for origin: ${origin}`))
+    },
+    credentials: true,
+  }),
+)
+
+app.use(express.json())
+
 app.get('/', (req, res) => {
-  res.json({ 
-    status: "success",
-    message: "¡El backend de FixIt está respondiendo en producción! 🚀" 
-  });
-});
+  res.json({
+    status: 'success',
+    message: 'FixIt API is running.',
+  })
+})
 
-// Enlaza tus rutas aquí (ejemplo):
-// app.use('/api/auth', authRoutes);
+app.use('/api/auth', authRoutes)
+app.use('/api/ai', aiRoutes)
+app.use('/api/clients', clientRoutes)
+app.use('/api/devices', deviceRoutes)
+app.use('/api/orders', orderRoutes)
 
-module.exports = app;
+module.exports = app

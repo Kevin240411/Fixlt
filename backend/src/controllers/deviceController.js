@@ -2,9 +2,17 @@ const prisma = require('../config/prisma')
 
 async function createDevice(req, res) {
   try {
-    const { brand, model, serialNumber, reported_fault: reportedFault } = req.body
+    const {
+      brand,
+      model,
+      serialNumber,
+      reportedFault,
+      reported_fault: reportedFaultSnakeCase,
+    } = req.body
 
-    if (!brand || !model || !serialNumber || !reportedFault) {
+    const faultDescription = reportedFault || reportedFaultSnakeCase
+
+    if (!brand || !model || !serialNumber || !faultDescription) {
       return res.status(400).json({ message: 'brand, model, serialNumber and reported_fault are required.' })
     }
 
@@ -13,7 +21,7 @@ async function createDevice(req, res) {
         brand,
         model,
         serialNumber,
-        reportedFault,
+        reportedFault: faultDescription,
       },
     })
 

@@ -1,5 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { AppDataContext } from './AppDataContextObject'
+import {
+  createClient as createClientRequest,
+  createDevice as createDeviceRequest,
+  getActiveOrders,
+} from '../services/api'
 
 const initialOrders = [
   {
@@ -23,15 +28,58 @@ const initialOrders = [
 export function AppDataProvider({ children }) {
   const [clients, setClients] = useState([])
   const [devices, setDevices] = useState([])
-  const [orders] = useState(initialOrders)
+  const [orders, setOrders] = useState(initialOrders)
+
+  useEffect(() => {
+    let isMounted = true
+
+    getActiveOrders()
+      .then((activeOrders) => {
+        if (!isMounted) {
+          return
+        }
+
+        setOrders(
+          activeOrders.map((order) => ({
+            id: order.id,
+            clientName: order.client?.fullName || 'Unknown client',
+            device: order.device ? `${order.device.brand} ${order.device.model}` : 'Unknown device',
+            status: order.status,
+            priority: order.priority,
+            cost: order.cost ?? 0,
+          })),
+        )
+      })
+      .catch(() => {
+        if (isMounted) {
+          setOrders(initialOrders)
+        }
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  async function addClient(client) {
+    const createdClient = await createClientRequest(client)
+    setClients((prev) => [createdClient, ...prev])
+    return createdClient
+  }
+
+  async function addDevice(device) {
+    const createdDevice = await createDeviceRequest(device)
+    setDevices((prev) => [createdDevice, ...prev])
+    return createdDevice
+  }
 
   const value = useMemo(
     () => ({
       clients,
       devices,
       orders,
-      addClient: (client) => setClients((prev) => [client, ...prev]),
-      addDevice: (device) => setDevices((prev) => [device, ...prev]),
+      addClient,
+      addDevice,
     }),
     [clients, devices, orders],
   )
