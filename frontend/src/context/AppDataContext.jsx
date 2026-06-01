@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AppDataContext } from './AppDataContextObject'
 import {
   createClient as createClientRequest,
   createDevice as createDeviceRequest,
-  getClients,
+  tryGetClients,
   isApiConfigured,
   getActiveOrders,
 } from '../services/api'
@@ -34,46 +34,51 @@ export function AppDataProvider({ children }) {
 
   async function loadClients() {
     if (!isApiConfigured) {
-      return
+      return []
     }
 
-    const items = await getClients()
-    setClients(items)
+    return tryGetClients()
   }
 
   async function loadOrders() {
     if (!isApiConfigured) {
-      setOrders(initialOrders)
-      return
+      return initialOrders
     }
 
     const activeOrders = await getActiveOrders()
-    setOrders(
-      activeOrders.map((order) => ({
-        id: order.id,
-        clientName: order.client?.fullName || 'Unknown client',
-        device: order.device ? `${order.device.brand} ${order.device.model}` : 'Unknown device',
-        status: order.status,
-        priority: order.priority,
-        cost: order.cost ?? 0,
-      })),
-    )
+    return activeOrders.map((order) => ({
+      id: order.id,
+      clientName: order.client?.fullName || 'Unknown client',
+      device: order.device ? `${order.device.brand} ${order.device.model}` : 'Unknown device',
+      status: order.status,
+      priority: order.priority,
+      cost: order.cost ?? 0,
+    }))
+  }
+
+  async function updateExistingOrder(orderId, patch) {
+    setOrders((prev) => prev.map((order) => (order.id === orderId ? { ...order, ...patch } : order)))
+  }
+
+  async function removeOrder(orderId) {
+    setOrders((prev) => prev.filter((order) => order.id !== orderId))
   }
 
   useEffect(() => {
     let isMounted = true
 
-    loadOrders()
-      .then(() => {
-        if (!isMounted && isApiConfigured) {
-          return
+    ;(async () => {
+      try {
+        const items = await loadOrders()
+        if (isMounted) {
+          setOrders(items)
         }
-      })
-      .catch(() => {
+      } catch {
         if (isMounted) {
           setOrders(initialOrders)
         }
-      })
+      }
+    })()
 
     return () => {
       isMounted = false
@@ -87,17 +92,18 @@ export function AppDataProvider({ children }) {
 
     let isMounted = true
 
-    loadClients()
-      .then(() => {
-        if (!isMounted) {
-          return
+    ;(async () => {
+      try {
+        const items = await loadClients()
+        if (isMounted) {
+          setClients(items)
         }
-      })
-      .catch(() => {
+      } catch {
         if (isMounted) {
           setClients([])
         }
-      })
+      }
+    })()
 
     return () => {
       isMounted = false
@@ -116,7 +122,8 @@ export function AppDataProvider({ children }) {
     }
 
     const createdClient = await createClientRequest(client)
-    await loadClients()
+    const items = await loadClients()
+    setClients(items)
     return createdClient
   }
 
@@ -136,16 +143,15 @@ export function AppDataProvider({ children }) {
     return createdDevice
   }
 
-  const value = useMemo(
-    () => ({
-      clients,
-      devices,
-      orders,
-      addClient,
-      addDevice,
-    }),
-    [clients, devices, orders],
-  )
+  const value = {
+    clients,
+    devices,
+    orders,
+    addClient,
+    addDevice,
+    updateExistingOrder,
+    removeOrder,
+  }
 
   return <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>
 }

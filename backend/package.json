@@ -5,9 +5,10 @@
   "main": "src/server.js",
   "scripts": {
     "dev": "nodemon src/server.js",
-    "prestart": "prisma generate",
+    "prestart": "prisma migrate deploy && prisma generate",
     "start": "node src/server.js",
     "prisma:generate": "prisma generate",
+    "prisma:migrate:deploy": "prisma migrate deploy",
     "test": "jest --runInBand",
     "postinstall": "prisma generate"
   },

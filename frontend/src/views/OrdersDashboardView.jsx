@@ -5,7 +5,7 @@ import { OrdersTable } from '../components/orders/OrdersTable'
 import { useAppData } from '../hooks/useAppData'
 
 export function OrdersDashboardView() {
-  const { clients, orders } = useAppData()
+  const { clients, orders, updateExistingOrder, removeOrder } = useAppData()
 
   return (
     <main className="mx-auto max-w-6xl space-y-6 px-4 py-8">
@@ -26,7 +26,7 @@ export function OrdersDashboardView() {
 
       <section className="space-y-2">
         <h2 className="text-lg font-semibold text-slate-900">Active Repairs</h2>
-        <OrdersTable orders={orders} />
+        <OrdersTable orders={orders} onEdit={updateExistingOrder} onDelete={removeOrder} />
       </section>
     </main>
   )

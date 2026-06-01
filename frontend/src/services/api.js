@@ -22,11 +22,14 @@ async function request(path, options = {}) {
     throw new Error('API base URL is not configured.')
   }
 
+  const method = options.method || 'GET'
+  const headers = {
+    ...(method === 'GET' ? {} : { 'Content-Type': 'application/json' }),
+    ...(options.headers || {}),
+  }
+
   const response = await fetch(`${API_BASE_URL}${path}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options.headers || {}),
-    },
+    headers,
     ...options,
   })
 
@@ -50,6 +53,10 @@ export function createClient(client) {
 
 export function getClients() {
   return request('/api/clients')
+}
+
+export function tryGetClients() {
+  return getClients().catch(() => [])
 }
 
 export function createDevice(device) {
