@@ -3,6 +3,7 @@ import { AppDataContext } from './AppDataContextObject'
 import {
   createClient as createClientRequest,
   createDevice as createDeviceRequest,
+  isApiConfigured,
   getActiveOrders,
 } from '../services/api'
 
@@ -31,6 +32,11 @@ export function AppDataProvider({ children }) {
   const [orders, setOrders] = useState(initialOrders)
 
   useEffect(() => {
+    if (!isApiConfigured) {
+      setOrders(initialOrders)
+      return undefined
+    }
+
     let isMounted = true
 
     getActiveOrders()
@@ -62,12 +68,32 @@ export function AppDataProvider({ children }) {
   }, [])
 
   async function addClient(client) {
+    if (!isApiConfigured) {
+      const localClient = {
+        ...client,
+        id: Date.now(),
+      }
+
+      setClients((prev) => [localClient, ...prev])
+      return localClient
+    }
+
     const createdClient = await createClientRequest(client)
     setClients((prev) => [createdClient, ...prev])
     return createdClient
   }
 
   async function addDevice(device) {
+    if (!isApiConfigured) {
+      const localDevice = {
+        ...device,
+        id: Date.now(),
+      }
+
+      setDevices((prev) => [localDevice, ...prev])
+      return localDevice
+    }
+
     const createdDevice = await createDeviceRequest(device)
     setDevices((prev) => [createdDevice, ...prev])
     return createdDevice

@@ -1,6 +1,11 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000').replace(/\/$/, '')
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '')
+export const isApiConfigured = Boolean(API_BASE_URL)
 
 async function request(path, options = {}) {
+  if (!isApiConfigured) {
+    throw new Error('API base URL is not configured.')
+  }
+
   const response = await fetch(`${API_BASE_URL}${path}`, {
     headers: {
       'Content-Type': 'application/json',

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAppData } from '../../hooks/useAppData'
+import { isApiConfigured } from '../../services/api'
 
 const initialClient = {
   fullName: '',
@@ -31,7 +32,7 @@ export function ClientRegistrationForm() {
         phone: form.phone.trim(),
       })
       setForm(initialClient)
-      setStatus('Client saved to the backend.')
+      setStatus(isApiConfigured ? 'Client saved to the backend.' : 'Backend not configured; saved locally.')
     } catch (error) {
       setStatus(error.message)
     }

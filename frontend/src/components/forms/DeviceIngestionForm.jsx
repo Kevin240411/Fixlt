@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAppData } from '../../hooks/useAppData'
+import { isApiConfigured } from '../../services/api'
 
 const initialDevice = {
   brand: '',
@@ -33,7 +34,7 @@ export function DeviceIngestionForm() {
         reportedFault: form.reportedFault.trim(),
       })
       setForm(initialDevice)
-      setStatus('Device saved to the backend.')
+      setStatus(isApiConfigured ? 'Device saved to the backend.' : 'Backend not configured; saved locally.')
     } catch (error) {
       setStatus(error.message)
     }
