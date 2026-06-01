@@ -1,4 +1,42 @@
 export function OrdersTable({ orders, onEdit, onDelete }) {
+  const allowedStatuses = ['PENDING', 'IN_PROGRESS', 'WAITING_PARTS', 'COMPLETED', 'CANCELLED']
+
+  async function handleEdit(order) {
+    const nextStatus = window.prompt(
+      `Nuevo status (${allowedStatuses.join(', ')}):`,
+      order.status,
+    )
+
+    if (!nextStatus) {
+      return
+    }
+
+    const normalizedStatus = nextStatus.trim().toUpperCase()
+
+    if (!allowedStatuses.includes(normalizedStatus)) {
+      window.alert('Status invalido. Usa uno de los valores permitidos.')
+      return
+    }
+
+    try {
+      await onEdit(order.id, { status: normalizedStatus })
+    } catch (error) {
+      window.alert(error.message || 'No se pudo editar la orden.')
+    }
+  }
+
+  async function handleDelete(order) {
+    if (!window.confirm(`Eliminar la orden #${order.id}?`)) {
+      return
+    }
+
+    try {
+      await onDelete(order.id)
+    } catch (error) {
+      window.alert(error.message || 'No se pudo eliminar la orden.')
+    }
+  }
+
   return (
     <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
       <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
@@ -34,25 +72,14 @@ export function OrdersTable({ orders, onEdit, onDelete }) {
                     <button
                       type="button"
                       className="rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100"
-                      onClick={() => {
-                        const nextStatus = window.prompt('Nuevo status:', order.status)
-                        if (!nextStatus) {
-                          return
-                        }
-
-                        onEdit(order.id, { status: nextStatus.trim().toUpperCase() })
-                      }}
+                      onClick={() => handleEdit(order)}
                     >
                       Editar
                     </button>
                     <button
                       type="button"
                       className="rounded-md border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 hover:bg-rose-100"
-                      onClick={() => {
-                        if (window.confirm(`Eliminar la orden #${order.id}?`)) {
-                          onDelete(order.id)
-                        }
-                      }}
+                      onClick={() => handleDelete(order)}
                     >
                       Eliminar
                     </button>

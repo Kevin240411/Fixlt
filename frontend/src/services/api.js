@@ -85,3 +85,16 @@ export function createDevice(device) {
 export function getActiveOrders() {
   return request('/api/orders/active')
 }
+
+export function updateOrder(id, order) {
+  return request(`/api/orders/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(order),
+  })
+}
+
+export function deleteOrder(id) {
+  return request(`/api/orders/${id}`, {
+    method: 'DELETE',
+  })
+}

@@ -51,7 +51,81 @@ async function listActiveRepairOrders(req, res) {
   }
 }
 
+async function updateRepairOrder(req, res) {
+  try {
+    const id = Number(req.params.id)
+    const { status, priority, cost, notes } = req.body
+
+    if (!Number.isInteger(id)) {
+      return res.status(400).json({ message: 'Invalid repair order id.' })
+    }
+
+    const data = {}
+
+    if (status !== undefined) {
+      data.status = status
+    }
+
+    if (priority !== undefined) {
+      data.priority = priority
+    }
+
+    if (cost !== undefined) {
+      data.cost = cost
+    }
+
+    if (notes !== undefined) {
+      data.notes = notes
+    }
+
+    if (Object.keys(data).length === 0) {
+      return res.status(400).json({ message: 'At least one field is required to update.' })
+    }
+
+    const order = await prisma.repairOrder.update({
+      where: { id },
+      data,
+      include: {
+        client: true,
+        device: true,
+      },
+    })
+
+    return res.status(200).json(order)
+  } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ message: 'Repair order not found.' })
+    }
+
+    return res.status(500).json({ message: 'Unable to update repair order.', error: error.message })
+  }
+}
+
+async function deleteRepairOrder(req, res) {
+  try {
+    const id = Number(req.params.id)
+
+    if (!Number.isInteger(id)) {
+      return res.status(400).json({ message: 'Invalid repair order id.' })
+    }
+
+    await prisma.repairOrder.delete({
+      where: { id },
+    })
+
+    return res.status(204).send()
+  } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ message: 'Repair order not found.' })
+    }
+
+    return res.status(500).json({ message: 'Unable to delete repair order.', error: error.message })
+  }
+}
+
 module.exports = {
   createRepairOrder,
   listActiveRepairOrders,
+  updateRepairOrder,
+  deleteRepairOrder,
 }

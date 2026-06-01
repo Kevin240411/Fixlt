@@ -5,6 +5,8 @@ import {
   createDevice as createDeviceRequest,
   updateClient as updateClientRequest,
   deleteClient as deleteClientRequest,
+  updateOrder as updateOrderRequest,
+  deleteOrder as deleteOrderRequest,
   tryGetClients,
   isApiConfigured,
   getActiveOrders,
@@ -59,11 +61,25 @@ export function AppDataProvider({ children }) {
   }
 
   async function updateExistingOrder(orderId, patch) {
-    setOrders((prev) => prev.map((order) => (order.id === orderId ? { ...order, ...patch } : order)))
+    if (!isApiConfigured) {
+      setOrders((prev) => prev.map((order) => (order.id === orderId ? { ...order, ...patch } : order)))
+      return
+    }
+
+    await updateOrderRequest(orderId, patch)
+    const items = await loadOrders()
+    setOrders(items)
   }
 
   async function removeOrder(orderId) {
-    setOrders((prev) => prev.filter((order) => order.id !== orderId))
+    if (!isApiConfigured) {
+      setOrders((prev) => prev.filter((order) => order.id !== orderId))
+      return
+    }
+
+    await deleteOrderRequest(orderId)
+    const items = await loadOrders()
+    setOrders(items)
   }
 
   async function updateExistingClient(clientId, patch) {

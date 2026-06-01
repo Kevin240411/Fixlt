@@ -3,6 +3,8 @@ const rateLimit = require('express-rate-limit')
 const {
   createRepairOrder,
   listActiveRepairOrders,
+  updateRepairOrder,
+  deleteRepairOrder,
 } = require('../controllers/orderController')
 const { requireAuth, requireRole } = require('../middleware/authMiddleware')
 
@@ -12,5 +14,7 @@ const orderLimiter = rateLimit({ windowMs: 60_000, limit: 60, standardHeaders: t
 // Admins and technicians can create/track active repair orders.
 router.post('/', orderLimiter, requireAuth, requireRole('admin', 'technician'), createRepairOrder)
 router.get('/active', orderLimiter, listActiveRepairOrders)
+router.put('/:id', orderLimiter, updateRepairOrder)
+router.delete('/:id', orderLimiter, deleteRepairOrder)
 
 module.exports = router
