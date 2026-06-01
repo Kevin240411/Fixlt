@@ -1,7 +1,7 @@
-const { PrismaClient } = require('@prisma/client')
-const { PrismaMariaDb } = require('@prisma/adapter-mariadb')
+// src/config/prisma.js
+const { PrismaClient } = require('@prisma/client');
 
-const adapter = new PrismaMariaDb(process.env.DATABASE_URL)
-const prisma = new PrismaClient({ adapter })
+// No necesitas pasarle ningún adapter manual aquí si tu entorno es Node tradicional
+const prisma = new PrismaClient();
 
-module.exports = prisma
+module.exports = prisma;
