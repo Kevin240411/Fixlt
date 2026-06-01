@@ -22,10 +22,22 @@ function getAllowedOrigins() {
   return [...new Set([...baseOrigins, ...configuredOrigins, ...vercelOrigin])]
 }
 
+function isAllowedOrigin(origin) {
+  if (!origin) {
+    return true
+  }
+
+  if (getAllowedOrigins().includes(origin)) {
+    return true
+  }
+
+  return /^https:\/\/[a-z0-9-]+(?:\.[a-z0-9-]+)*\.vercel\.app$/i.test(origin)
+}
+
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin || getAllowedOrigins().includes(origin)) {
+      if (isAllowedOrigin(origin)) {
         return callback(null, true)
       }
 

@@ -1,4 +1,20 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '')
+function normalizeApiBaseUrl(value) {
+  const normalized = String(value || '').trim().replace(/\/$/, '')
+
+  if (!normalized) {
+    return ''
+  }
+
+  const isLocalHost = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(normalized)
+
+  if (import.meta.env.PROD && isLocalHost) {
+    return ''
+  }
+
+  return normalized
+}
+
+const API_BASE_URL = normalizeApiBaseUrl(import.meta.env.VITE_API_BASE_URL)
 export const isApiConfigured = Boolean(API_BASE_URL)
 
 async function request(path, options = {}) {
