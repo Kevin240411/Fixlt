@@ -1,27 +1,27 @@
-require('dotenv').config()
+const express = require('express');
+const cors = require('cors');
+// Importa tus enrutadores reales aquí cuando los tengas listos, por ejemplo:
+// const authRoutes = require('./routes/auth'); 
 
-const cors = require('cors')
-const express = require('express')
+const app = express();
 
-const aiRoutes = require('./routes/aiRoutes')
-const authRoutes = require('./routes/authRoutes')
-const clientRoutes = require('./routes/clientRoutes')
-const deviceRoutes = require('./routes/deviceRoutes')
-const orderRoutes = require('./routes/orderRoutes')
+// Configuración de CORS para tu frontend
+app.use(cors({
+  origin: ["http://localhost:5173", "http://localhost:3000"],
+  credentials: true
+}));
 
-const app = express()
+app.use(express.json());
 
-app.use(cors())
-app.use(express.json())
+// RUTA RAÍZ: Esto quitará el "Cannot GET /" y confirmará que todo sirve
+app.get('/', (req, res) => {
+  res.json({ 
+    status: "success",
+    message: "¡El backend de FixIt está respondiendo en producción! 🚀" 
+  });
+});
 
-app.get('/health', (_req, res) => {
-  res.status(200).json({ status: 'ok', service: 'fixit-api' })
-})
+// Enlaza tus rutas aquí (ejemplo):
+// app.use('/api/auth', authRoutes);
 
-app.use('/api/auth', authRoutes)
-app.use('/api/clients', clientRoutes)
-app.use('/api/devices', deviceRoutes)
-app.use('/api/orders', orderRoutes)
-app.use('/api/ai', aiRoutes)
-
-module.exports = app
+module.exports = app;

@@ -5,9 +5,11 @@
   "main": "src/server.js",
   "scripts": {
     "dev": "nodemon src/server.js",
+    "prestart": "prisma generate",
     "start": "node src/server.js",
     "prisma:generate": "prisma generate",
-    "test": "jest --runInBand"
+    "test": "jest --runInBand",
+    "postinstall": "prisma generate"
   },
   "keywords": [
     "fixit",
