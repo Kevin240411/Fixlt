@@ -3,6 +3,7 @@ import { AppDataContext } from './AppDataContextObject'
 import {
   createClient as createClientRequest,
   createDevice as createDeviceRequest,
+  getClients,
   isApiConfigured,
   getActiveOrders,
 } from '../services/api'
@@ -31,34 +32,70 @@ export function AppDataProvider({ children }) {
   const [devices, setDevices] = useState([])
   const [orders, setOrders] = useState(initialOrders)
 
-  useEffect(() => {
+  async function loadClients() {
+    if (!isApiConfigured) {
+      return
+    }
+
+    const items = await getClients()
+    setClients(items)
+  }
+
+  async function loadOrders() {
     if (!isApiConfigured) {
       setOrders(initialOrders)
+      return
+    }
+
+    const activeOrders = await getActiveOrders()
+    setOrders(
+      activeOrders.map((order) => ({
+        id: order.id,
+        clientName: order.client?.fullName || 'Unknown client',
+        device: order.device ? `${order.device.brand} ${order.device.model}` : 'Unknown device',
+        status: order.status,
+        priority: order.priority,
+        cost: order.cost ?? 0,
+      })),
+    )
+  }
+
+  useEffect(() => {
+    let isMounted = true
+
+    loadOrders()
+      .then(() => {
+        if (!isMounted && isApiConfigured) {
+          return
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setOrders(initialOrders)
+        }
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!isApiConfigured) {
       return undefined
     }
 
     let isMounted = true
 
-    getActiveOrders()
-      .then((activeOrders) => {
+    loadClients()
+      .then(() => {
         if (!isMounted) {
           return
         }
-
-        setOrders(
-          activeOrders.map((order) => ({
-            id: order.id,
-            clientName: order.client?.fullName || 'Unknown client',
-            device: order.device ? `${order.device.brand} ${order.device.model}` : 'Unknown device',
-            status: order.status,
-            priority: order.priority,
-            cost: order.cost ?? 0,
-          })),
-        )
       })
       .catch(() => {
         if (isMounted) {
-          setOrders(initialOrders)
+          setClients([])
         }
       })
 
@@ -79,7 +116,7 @@ export function AppDataProvider({ children }) {
     }
 
     const createdClient = await createClientRequest(client)
-    setClients((prev) => [createdClient, ...prev])
+    await loadClients()
     return createdClient
   }
 

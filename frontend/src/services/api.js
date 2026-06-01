@@ -48,6 +48,10 @@ export function createClient(client) {
   })
 }
 
+export function getClients() {
+  return request('/api/clients')
+}
+
 export function createDevice(device) {
   return request('/api/devices', {
     method: 'POST',

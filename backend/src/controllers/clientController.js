@@ -18,6 +18,19 @@ async function createClient(req, res) {
   }
 }
 
+async function listClients(req, res) {
+  try {
+    const clients = await prisma.client.findMany({
+      orderBy: { createdAt: 'desc' },
+    })
+
+    return res.status(200).json(clients)
+  } catch (error) {
+    return res.status(500).json({ message: 'Unable to list clients.', error: error.message })
+  }
+}
+
 module.exports = {
   createClient,
+  listClients,
 }

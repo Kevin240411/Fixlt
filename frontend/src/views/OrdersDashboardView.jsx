@@ -1,10 +1,11 @@
 import { ClientRegistrationForm } from '../components/forms/ClientRegistrationForm'
 import { DeviceIngestionForm } from '../components/forms/DeviceIngestionForm'
+import { ClientsTable } from '../components/clients/ClientsTable'
 import { OrdersTable } from '../components/orders/OrdersTable'
 import { useAppData } from '../hooks/useAppData'
 
 export function OrdersDashboardView() {
-  const { orders } = useAppData()
+  const { clients, orders } = useAppData()
 
   return (
     <main className="mx-auto max-w-6xl space-y-6 px-4 py-8">
@@ -16,6 +17,11 @@ export function OrdersDashboardView() {
       <section className="grid gap-4 md:grid-cols-2">
         <ClientRegistrationForm />
         <DeviceIngestionForm />
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="text-lg font-semibold text-slate-900">Saved Clients</h2>
+        <ClientsTable clients={clients} />
       </section>
 
       <section className="space-y-2">
