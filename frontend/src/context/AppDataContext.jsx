@@ -3,6 +3,8 @@ import { AppDataContext } from './AppDataContextObject'
 import {
   createClient as createClientRequest,
   createDevice as createDeviceRequest,
+  updateClient as updateClientRequest,
+  deleteClient as deleteClientRequest,
   tryGetClients,
   isApiConfigured,
   getActiveOrders,
@@ -62,6 +64,28 @@ export function AppDataProvider({ children }) {
 
   async function removeOrder(orderId) {
     setOrders((prev) => prev.filter((order) => order.id !== orderId))
+  }
+
+  async function updateExistingClient(clientId, patch) {
+    if (!isApiConfigured) {
+      setClients((prev) => prev.map((client) => (client.id === clientId ? { ...client, ...patch } : client)))
+      return
+    }
+
+    await updateClientRequest(clientId, patch)
+    const items = await loadClients()
+    setClients(items)
+  }
+
+  async function removeClient(clientId) {
+    if (!isApiConfigured) {
+      setClients((prev) => prev.filter((client) => client.id !== clientId))
+      return
+    }
+
+    await deleteClientRequest(clientId)
+    const items = await loadClients()
+    setClients(items)
   }
 
   useEffect(() => {
@@ -149,6 +173,8 @@ export function AppDataProvider({ children }) {
     orders,
     addClient,
     addDevice,
+    updateExistingClient,
+    removeClient,
     updateExistingOrder,
     removeOrder,
   }

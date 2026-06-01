@@ -55,6 +55,19 @@ export function getClients() {
   return request('/api/clients')
 }
 
+export function updateClient(id, client) {
+  return request(`/api/clients/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(client),
+  })
+}
+
+export function deleteClient(id) {
+  return request(`/api/clients/${id}`, {
+    method: 'DELETE',
+  })
+}
+
 export function tryGetClients() {
   return getClients().catch(() => [])
 }
